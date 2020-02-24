@@ -1,0 +1,150 @@
+#! /usr/bin/env bash
+
+export SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
+export AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
+
+source "${SCRIPTS_PATH}/quicktest_interface"
+
+usage() {
+
+	printf_string_err \
+		"" \
+		" usage: ${quicktest_PROG_NAME}" \
+		"  [-b|--boilerplate boilerplate_name]" \
+		"  [-gbc|--get-boilerplate-code path_to_new_file]" \
+ 		"  [-h|--help]" \
+		"  [-i|--instance instance_name]" \
+		"  [-mb|--modify-boilerplate [boilerplate_file]]" \
+		"  [-mucf|--modify-user-config-file] [user_config_file]]" \
+		"  [-n|--new]" \
+		"  [-r|--recover]" \
+		"  [-ra|--register-action key_for_action action_name]" \
+		"  [-rma|--remove-action action_name]" \
+		"  [-s|--save-to-path path]" \
+		"  [-sb|--show-boilerplates]" \
+		"  [-sh|--show-history [history_cnt]]" \
+		"  [-sucf|--show_user-config-files]" \
+		"  [-uc user_config_file_name]" \
+		""
+}
+
+quicktest_help() {
+	local normal_color='\033[0m'
+
+printf "
+${quicktest_COLOR}-b|--boilerplate <boilerplate_name>:${normal_color}
+	The boilerplate file name to be used for current execution.
+
+${quicktest_COLOR}-gbc|--get-boilerplate-code [at_path]:${normal_color}
+	Copies the current boilerplate code at given path. It would copy to
+	current directory if no arg is supplied and name of path will be same
+	as name of boilerplate.
+
+${quicktest_COLOR}-h|--help:${normal_color}
+	Show help.
+
+${quicktest_COLOR}-i|--instance <instance_name>:${normal_color}
+	The name of the test instance.
+
+${quicktest_COLOR}-mb|--modify-boilerplate [boilerplate_file_name]:${normal_color}
+	Opens the current boilerplate file.
+	Would open a new empty file if doesn't exist.
+
+${quicktest_COLOR}-mucf|--modify-user-config-file [user_config_file_name]:${normal_color}
+	Opens the current user config file.
+	Would open a new file with template text if doesn't exist.
+
+${quicktest_COLOR}-n|--new:${normal_color}
+	Causes the script to populate the current instance file with current boilerplate contents.
+
+${quicktest_COLOR}-r|--recover:${normal_color}
+	Resets to default user config file.
+
+${quicktest_COLOR}-ra|--register-action key_for_action action_name:${normal_color}
+	Register an action named action_name.
+	Now you can use key given by \"key_for_action\"
+	in your user config file to define what would happen
+	when \"action_name\" is executed.
+	e.g.,
+	A successful call to:
+		${quicktest_PROG_NAME} -ra COMPILE ct
+	would register action ct.
+	Now if you define COMPILE in your user config file as:
+		COMPILE   gcc ___TESTPATH___ -o ___OUTPUT___
+	and then you call:
+		ct
+	It would execute:
+		gcc <current_instance_file> -o <.out file>
+
+${quicktest_COLOR}-rma|--remove-action action_name:${normal_color}
+	Removes action \"action_name\".
+
+${quicktest_COLOR}-s|--save-to-path path>:${normal_color}
+	Saves the current testfile to the specified path
+
+${quicktest_COLOR}-sb|--show-boilerplates:${normal_color}
+	Shows all boilerplates via \"ls -al\".
+
+${quicktest_COLOR}-sh|--show-history [count]:${normal_color}
+	Shows the recent files in testing directory. If count is not given it
+	shows last ${quicktest_HISTORY_COUNT} files.
+
+${quicktest_COLOR}-sucf|--show_user-config-files:${normal_color}
+	Shows all user config files via \"ls -al\"
+
+${quicktest_COLOR}-uc|--user-config:${normal_color}
+	the user config file to be used for current execution
+
+${quicktest_COLOR}-v|--verbose:${normal_color}
+	Verbose output of the building blocks of current execution
+"
+
+}
+
+verbose_output() {
+	local instance
+	local boilerplate_name
+	local testfile_name
+	local user_config_file_path
+	local outfile
+
+	instance="$( get_from_real_time_data "INSTANCE" )"
+
+	user_config_file_path="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+	user_config_file_path="$( quicktest_path_normalize "${user_config_file_path}" )"
+
+	boilerplate_path="$( get_from_current_user_config_file "BOILERPLATE" )"
+	boilerplate_path="$( quicktest_path_normalize "${boilerplate_path}" )"
+
+	outfile="$( replace_quicktest_vars "___OUTPUT___" )"
+
+	quicktest_colored_print "Testing path:"
+   	printf "\t${quicktest_TEST_PATH}\n"
+
+	quicktest_colored_print "Current instance:"
+	printf "\t${quicktest_TEST_PATH}/${instance}\n"
+
+	quicktest_colored_print "Current executable:"
+	printf "\t${outfile}\n"
+
+	quicktest_colored_print "Current user config file:"
+	printf "\t${user_config_file_path}\n"
+
+	quicktest_colored_print "Current boilerplate:"
+	printf "\t${boilerplate_path}\n"
+}
+
+
+show_file_edit_history() {
+	local history_cnt=$1; shift
+
+	ls -1t "${quicktest_TEST_PATH}" | head -"${history_cnt}"
+}
+
+show_all_boilerplates() {
+	ls -al "${quicktest_BOILERPLATES_PATH}"
+}
+
+show_all_user_config_files() {
+	ls -al "${quicktest_USER_CONFIG_PATH}"
+}
