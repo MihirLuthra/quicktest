@@ -19,10 +19,18 @@ $0 == "" {
 function trim_leading_and_trailing_blanks(arg) {
 
 	# trim leading spaces
-	sub(/^[[:blank:]]+/, "", arg)
+	sub(/^ +/, "", arg)
+	sub(/^\t+/, "", arg)
 
 	# trim trailing spaces
-	sub(/[[:blank:]]+$/, "", arg)
+	sub(/ +$/, "", arg)
+	sub(/\t+$/, "", arg)
+
+	#
+	# Well I know [[:blank:[] exists but portability
+	# issues.
+	#
+	
 
 	return arg
 }
