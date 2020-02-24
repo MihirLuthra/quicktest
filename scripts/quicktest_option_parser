@@ -203,3 +203,10 @@ parse_options() {
 	readonly ARGS
 	readonly ACTION
 }
+
+get_arg() {
+	local option=$1 ; shift
+	local arg_pos=$1 ; shift
+
+	awk -F' ' -v arg_pos="${arg_pos}" '{printf $arg_pos}' <<<"${ARGS["${option}"]}"
+}

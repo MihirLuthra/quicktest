@@ -61,7 +61,7 @@ copy_boilerplate_code_to_file_at_path() {
 	local boilerplate_path
 
 	if option="--boilerplate" && [ -n "${OPTIONS["${option}"]}" ] ; then
-		boilerplate_path="${ARGS["${option}"]}"
+		boilerplate_path="$( get_arg "${option}" "1" )"
 	else
 		boilerplate_path="$( get_from_current_user_config_file "BOILERPLATE" )"
 		return_if_error
@@ -167,11 +167,14 @@ action_settings() {
 
 	local file_to_modify
 	local option
+	local arg
 
 	if option="--modify-boilerplate" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
-		if [ -n "${ARGS["${option}"]}" ] ; then
-			file_to_modify="${ARGS["${option}"]}"
+		arg="$( get_arg "${option}" "1" )"
+
+		if [ -n "${arg}" ] ; then
+			file_to_modify="${arg}"
 		else
 			file_to_modify="$( get_from_current_user_config_file "BOILERPLATE" )"
 			return_if_error
@@ -184,8 +187,10 @@ action_settings() {
 
 	elif option="--modify-user-config-file" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
-		if [ -n "${ARGS["${option}"]}" ] ; then
-			file_to_modify="${quicktest_USER_CONFIG_PATH}/${ARGS["${option}"]}"
+		arg="$( get_arg "${option}" "1" )"
+
+		if [ -n "${arg}" ] ; then
+			file_to_modify="${quicktest_USER_CONFIG_PATH}/${arg}"
 		else
 			file_to_modify="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
 			return_if_error
@@ -202,8 +207,8 @@ action_settings() {
 
 	elif option="--register-action" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
-		key_for_action="$( awk '{print $1}' <<<"${ARGS["${option}"]}" )"
-		action_name="$( awk '{print $2}' <<<"${ARGS["${option}"]}" )"
+		key_for_action="$( get_arg "${option}" "1" )"
+		action_name="$( get_arg "${option}" "2" )"
 
 		prompt_if_overwrite "${COMMANDS_PATH}/${action_name}"
 
@@ -234,7 +239,8 @@ action_settings() {
 
 	elif option="--remove-action" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
-		action_name="${ARGS["${option}"]}"
+		action_name="$( get_arg "${option}" "1" )"
+
 		rm "${COMMANDS_PATH}/${action_name}"
 
 		return_if_error
@@ -256,6 +262,8 @@ action_settings() {
 action_info() {
 
 	local option
+	local history_cnt
+	local arg
 
 	if option="--help" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
@@ -267,14 +275,9 @@ action_info() {
 
 	elif option="--show-history" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
-		local history_cnt
+		arg="$( get_arg "${option}" "1" )"
 
-		if [ -n "${ARGS["${option}"]}" ] ; then
-			history_cnt="${ARGS["${option}"]}"
-		else
-			# default history count
-			history_cnt="${quicktest_HISTORY_COUNT}"
-		fi
+		history_cnt="${arg:-"${quicktest_HISTORY_COUNT}"}"
 
 		show_file_edit_history "${history_cnt}"
 
@@ -316,8 +319,8 @@ action_test() {
 	# INSTANCE i.e. the instance last used.
 	#
 	if option="--instance" && [ -n "${OPTIONS["${option}"]}" ] ; then
-		instance="${ARGS["${option}"]}"
-		update_real_time_data "INSTANCE" "${ARGS["${option}"]}"
+		instance="$( get_arg "${option}" "1" )"
+		update_real_time_data "INSTANCE" "${instance}"
 		return_if_error
 	else
 		instance="$( get_from_real_time_data "INSTANCE" )"
@@ -376,7 +379,7 @@ action_other() {
 
 	if option="--get-boilerplate-code" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
-		store_path="${ARGS["${option}"]}"
+		store_path="$( get_arg "${option}" "1" )"
 
 		# 1 means copy, 0 means don't copy and 2 means abort
 		prompt_if_overwrite "${store_path}"
@@ -394,15 +397,15 @@ action_other() {
 
 	elif option="--save-to-path" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
-		if option="--instance" && [ -n "${OPTIONS["${option}"]}" ] ; then
-			instance="${ARGS["${option}"]}"
+		if _option="--instance" && [ -n "${OPTIONS["${_option}"]}" ] ; then
+			instance="$( get_arg "${_option}" "1" )"
 		else
 			instance="$(get_from_real_time_data "INSTANCE")"
 			return_if_error
 		fi
 
 		testfile_path="${quicktest_TEST_PATH}/${instance}"
-		store_path="${ARGS["${option}"]}"
+		store_path="$( get_arg "${option}" "1" )"
 
 		prompt_if_overwrite "${store_path}"
 
@@ -427,6 +430,8 @@ action_other() {
 #
 main() {
 	local user_config_file_path
+	local arg
+	local option
 
 	#
 	# We will use `return_if_error` which is an alias defined in
@@ -467,9 +472,11 @@ main() {
 	# So first thing to do is set the user config file that we are going
 	# to use.
 	#
-	if [ -n "${OPTIONS["--user-config"]}" ] ; then
+	if option="--user-config" && [ -n "${OPTIONS["${option}"]}" ] ; then
+		
+		arg="$( get_arg "${option}" "1" )"
 
-		user_config_file_path="${quicktest_USER_CONFIG_PATH}/${ARGS["--user-config"]}"
+		user_config_file_path="${quicktest_USER_CONFIG_PATH}/${arg}"
 
 		if [ -f "${user_config_file_path}" ] ; then
 			update_real_time_data "CURRENT_USER_CONFIG_FILE" "${user_config_file_path}"
