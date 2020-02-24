@@ -1,0 +1,369 @@
+#! /usr/bin/env bash
+
+# don't source the script twice
+[ -n "${quicktest_SOURCE_GUARD}" ] && return 0
+readonly quicktest_SOURCE_GUARD="1"
+
+
+export SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
+export AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
+
+
+#
+# Well sorry if you hate aliases like this
+# but this makes the work really sweet and simple.
+#
+alias printf_err='printf_err_func "$( quicktest_path_normalize "${BASH_SOURCE}" ): Line ${LINENO}: " '
+
+alias return_if_error='
+	if [ $? -ne 0 ] ; then
+		printf_err "${FUNCNAME[0]}() failed"
+		return 1
+	fi
+'
+shopt -s expand_aliases
+
+
+set -a
+readonly quicktest_COLOR='\033[1;34m' # purple
+readonly quicktest_ERR_COLOR='\033[0;31m' # red
+readonly quicktest_NORMAL_COLOR='\033[0m'
+readonly quicktest_PROG_NAME="${quicktest_PROG_NAME:-"quicktest"}"
+set +a
+
+printf_err_func() {
+	for fmt in "$@"
+	do
+		printf "${quicktest_ERR_COLOR}${fmt}${quicktest_NORMAL_COLOR}" >&2
+	done
+	echo >&2
+}
+export -f printf_err_func
+
+#
+# Well difference between printf_err_func and this func is
+# that it is a single call to printf and args to it can
+# be passed in various chunks that are bought to newline.
+#
+# For example,
+#  printf_string_err "hello" "there"
+# prints:
+#  hello
+#  there
+#
+printf_string_err() {
+	printf "${quicktest_ERR_COLOR}%s${quicktest_NORMAL_COLOR}\n" "$@" >&2
+}
+export -f printf_string_err
+
+#
+# param1:
+#  path to normalize.
+#
+# Description:
+#  Just gets the absolute path without a trailing forward slash
+#  Doesn't resolve symlinks.
+#
+# retval:
+#  1 on error
+#
+quicktest_path_normalize() {
+	local path="$1" ; shift
+	local abs_path_dir
+	local abs_path
+
+	if [ -z "${path}" ] ; then
+		printf_error_func "${BASH_SOURCE}: Line ${LINENO}: param1(path) is empty"
+		return 1
+	fi
+
+	abs_path="$( cd "$( dirname ${path} )" ; pwd )/$( basename ${path} )"
+
+	printf "${abs_path}"
+}
+
+
+#
+# quicktest constants or important locations.
+# Don't leave a trailing slash or multiple slashes. It doesn't
+# matter as bash corrrects them anyway but that's just untidy
+# when being used by user.
+# result from quicktest_path_normalize doesn't have any.
+#
+set -a
+readonly quicktest_DATA_PATH="${QUICKTEST_PATH}/data"
+readonly quicktest_TEST_PATH="${quicktest_DATA_PATH}/tests_dir"
+readonly quicktest_BOILERPLATES_PATH="${quicktest_DATA_PATH}/boilerplates"
+readonly quicktest_USER_CONFIG_PATH="${quicktest_DATA_PATH}/user_config_files"
+readonly quicktest_REAL_TIME_DATA="${quicktest_DATA_PATH}/data_files/real_time_data"
+readonly quicktest_USER_CONFIG_TEMPLATE="${quicktest_DATA_PATH}/data_files/user_config_template"
+readonly quicktest_DEFAULT_USER_CONFIG="${quicktest_USER_CONFIG_PATH}/.default"
+readonly quicktest_DEFAULT_INSTANCE="${quicktest_TEST_PATH}/.default"
+readonly quicktest_DEFAULT_BOILERPLATE="${quicktest_BOILERPLATES_PATH}/.default"
+readonly quicktest_REGISTER_ACTION_TEMPLATE="${quicktest_DATA_PATH}/data_files/register_action_template"
+readonly quicktest_HISTORY_COUNT="7"
+set +a
+
+#
+# printf is quicktest's default color
+# and an extra newline.
+#
+quicktest_colored_print() {
+	printf "${quicktest_COLOR}"
+	printf "$@"
+	printf "${quicktest_NORMAL_COLOR}\n"
+}
+
+#
+# Prints the value of the key on stdout
+#
+# param1:
+#  quicktest config file path
+#
+# param2:
+#  Key to get
+#
+get_value_for_key() {
+	local file=$1; shift
+	local key=$1 ; shift
+
+	if [ -z "${file}" ] ; then
+		printf_err "param1(file) is empty"
+		return 1
+	fi
+
+	if [ ! -f "${file}" ] ; then
+		printf_err "${file}: No such file"
+		return 1
+	fi
+
+	awk -v key="${key}" -f "${AWK_FILES_PATH}/get_value_for_key.awk" "${file}"
+}
+export -f get_value_for_key
+
+#
+# Description:
+#  Creates a temporary file with same contents as
+#  param1 but deletes the key param2.
+#  At the end key param2 is appended with the new value.
+#  Then renames temporary file to param2 hence overwriting
+#  previous file.
+#
+# param1:
+#  quicktest config file path
+#
+# param2:
+#  Key to set
+#
+# param3:
+#  New value of the key
+#
+set_value_for_key() {
+
+	local file="$1" ; shift
+	local key="$1" ; shift
+	local value="$1" ; shift
+
+	if [ -z "${file}" ] ; then
+		printf_err "param1(file) is empty"
+		return 1
+	fi
+
+	if [ ! -f "${file}" ] ; then
+		printf_err \
+			"${file}: No such file"
+			"Creating new file."
+		touch "${file}"
+	fi
+
+
+	local temp_file="$(mktemp "/tmp/quicktest.temp.XXXXX")"
+
+	awk \
+		-v key="${key}" \
+		-v value="${value}" \
+		-f "${AWK_FILES_PATH}/set_value_for_key.awk" \
+		"${file}" > "${temp_file}"
+
+	if [ $? -ne 0 ] ; then
+		rm "${temp_file}" 2> /dev/null
+		printf_err "${FUNCNAME[0]}() failed"
+		return 1
+	fi
+
+	mv "${temp_file}" "${file}"
+
+}
+export -f set_value_for_key
+
+update_real_time_data() {
+	local key=$1 ; shift
+	local value="$1" ; shift
+
+	set_value_for_key "${quicktest_REAL_TIME_DATA}" "${key}" "${value}"
+
+	return_if_error
+}
+
+get_from_real_time_data() {
+
+	local key="$1" ; shift
+	local value
+
+	value="$(
+		get_value_for_key "${quicktest_REAL_TIME_DATA}" "${key}"
+	)"
+
+	return_if_error
+
+	value="$(
+		replace_quicktest_vars "${value}"
+	)"
+
+	return_if_error
+
+	if [ -z "${value}" ] ; then
+		printf_err "Value for ${key} is empty"
+		return 1
+	fi
+
+	printf "${value}"
+}
+
+update_data_in_current_user_config_file() {
+	local key="$1" ; shift
+	local value="$1" ; shift
+	local user_config_file_path
+
+	user_config_file_path="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+
+	return_if_error
+
+	set_value_for_key "${user_config_file_path}" "${key}" "${value}"
+
+	return_if_error
+}
+
+get_from_current_user_config_file() {
+
+	local key="$1" ; shift
+	local user_config_file_path
+	local value
+
+	user_config_file_path="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+
+	return_if_error
+
+	value="$(
+		get_value_for_key "${user_config_file_path}" "${key}"
+	)"
+
+	return_if_error
+
+	value="$(
+		replace_quicktest_vars "${value}"
+	)"
+
+	if [ -z "${value}" ] ; then
+		printf_err "Value for ${key} is empty"
+		return 1
+	fi
+
+	printf "${value}"
+}
+
+# quicktest vars:
+#
+#  ___INSTANCE___
+#      -> current tesfile name
+#
+#  ___TESTPATH___
+#      -> Path where testfiles are stored
+#
+#  ___TESTFILEPATH___
+#      -> Path to current testfile
+#
+#  ___TESTFILENAMEWITHOUTEXTENSION___
+#      -> Testfile name with extension stripped
+#
+#  ___OUTPUT___
+#      -> Just for convenience; is equivalent to ___TESTFILEPATH___/___INSTANCE___".out"
+#
+#  ___FILE_TO_OPEN___
+#      -> Represents that file that is getting opened with text editor.
+#
+get_quicktest_var_value() {
+	local var="$1" ; shift
+
+	#
+	# This function is called from awk's subshell.
+	# Variables or functions used here should be exported
+	# to subshell.
+	#
+
+	local value
+
+	case "${var}" in
+		'___INSTANCE___')
+			value="$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
+			;;
+		'___TESTPATH___')
+			value="${quicktest_TEST_PATH}"
+			;;
+		'___TESTFILEPATH___')
+			value="${quicktest_TEST_PATH}"
+			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
+			;;
+		'___TESTFILENAMEWITHOUTEXTENSION___')
+			value="$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
+			value="${value%.*}"
+			;;
+		'___OUTPUT___')
+			value="${quicktest_TEST_PATH}"
+			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
+			value="${value}.out"
+			;;
+		'___FILE_TO_OPEN___')
+			value="$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "FILE_TO_OPEN" )"
+			;;
+	esac
+
+	return_if_error
+
+	printf "${value}"
+}
+export -f get_quicktest_var_value
+
+#
+# Description:
+#  Replaces quicktest vars with there appropriate values.
+#
+# param1:
+#  Input on which replacements will be performed.
+#
+replace_quicktest_vars() {
+
+	local input="$1"
+	local updated_input
+
+	declare -a QUICKTEST_VARS
+
+	QUICKTEST_VARS=(
+		"___INSTANCE___"
+		"___TESTPATH___"
+		"___TESTFILEPATH___"
+		"___TESTFILENAMEWITHOUTEXTENSION___"
+		"___OUTPUT___"
+		"___FILE_TO_OPEN___"
+	)
+
+	#updated_input="$(
+		awk \
+			-v BASH_QUICKTEST_VARS="${QUICKTEST_VARS[*]}" \
+			-f "${AWK_FILES_PATH}/quicktest_var_replaces.awk" <<<"${input}"
+	#)"
+
+	return_if_error
+
+	echo -n "${updated_input}"
+}
