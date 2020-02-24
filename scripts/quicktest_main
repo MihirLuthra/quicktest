@@ -235,7 +235,7 @@ action_settings() {
 
 		return_if_error
 
-		quicktest_colored_print "\nRegistered action ${action_name}\n\n"
+		quicktest_colored_print "\nRegistered action ${action_name}\n"
 
 	elif option="--remove-action" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
@@ -245,7 +245,7 @@ action_settings() {
 
 		return_if_error
 
-		quicktest_colored_print "\nRemoved action ${action_name}\n\n"
+		quicktest_colored_print "\nRemoved action ${action_name}\n"
 	fi
 }
 
