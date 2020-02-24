@@ -1,0 +1,527 @@
+#! /usr/bin/env bash
+
+export SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
+export AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
+export COMMANDS_PATH="${QUICKTEST_PATH}/commands"
+
+source "${SCRIPTS_PATH}/quicktest_interface"
+source "${SCRIPTS_PATH}/quicktest_info_displayer"
+source "${SCRIPTS_PATH}/quicktest_option_parser"
+
+#
+# Description:
+#  Saves the file param1 to the path
+#  param2.
+#  Basically just copied param1 to param2
+#  performing checks and creating intermediate
+#  directories if necessary.
+#
+# param1:
+#  The path of file to be saved.
+#
+# param2:
+#  Save location.
+#
+# retval:
+#  returns 1 in case of error
+#  Otherwise contains the exit status
+#  of commands used within function.
+#
+save_file_to_path() {
+	local file_path=$1 ; shift
+	local store_path=$1 ; shift
+
+	local store_path_dir="$(dirname "${store_path}")"
+
+	mkdir -p "$(cd "$(dirname "${store_path}")" ; pwd)"
+
+	if [ -f "${file_path}" ] ; then
+		cp "${file_path}" "${store_path}"
+	else
+		printf_err "${file_path} : No such file"
+		return 1
+	fi
+}
+
+#
+# Description:
+#  Get contents of boilerplate file, replaces quicktest vars
+#  and redirects the output to path given by param1
+#
+# param1:
+#  Path to where the contents are to be copied.
+#
+# retval:
+#  1 : if error
+#  Otherwise contains the exit status
+#  of commands used within function.
+#
+copy_boilerplate_code_to_file_at_path() {
+	local store_path=$1 ; shift
+	local boilerplate_path
+
+	if option="--boilerplate" && [ -n "${OPTIONS["${option}"]}" ] ; then
+		boilerplate_path="${ARGS["${option}"]}"
+	else
+		boilerplate_path="$( get_from_current_user_config_file "BOILERPLATE" )"
+		return_if_error
+	fi
+
+	boilerplate_path="${quicktest_BOILERPLATES_PATH}/${boilerplate_path}"
+
+	if [ -f "${boilerplate_path}" ] ; then
+		# fetch the contents of file at boilerplate path, replace quicktest vars
+		# and redirect the output to testfile
+		replace_quicktest_vars "$(<"${boilerplate_path}")" > "${store_path}"
+	else
+		printf_err "${boilerplate_path} : No such file"
+		return 1
+	fi
+}
+
+#
+# Description:
+#  Updates FILE_TO_OPEN in real time data to param1.
+#  Opens param1 with the instructions of HOW_TO_OPEN_EDITOR
+#  fetched from current user config file.
+#
+# param1:
+#  path of the file to open.
+#
+# retval:
+#  Contains the exit status
+#  of commands used within function.
+#
+open_file() {
+	local file_to_open=$1 ; shift
+	local launch_text_editor
+
+	update_real_time_data "FILE_TO_OPEN" "${file_to_open}"
+
+	return_if_error
+
+	launch_text_editor="$( get_from_current_user_config_file "HOW_TO_OPEN_EDITOR" )"
+
+	return_if_error
+
+	"${BASH}" -c "${launch_text_editor}"
+}
+
+#
+# Description:
+#  This is used when we maybe overwriting a file.
+#  This checks if a path exists and if it is a file,
+#  user is asked if file should be overwritten or not.
+#
+# retval:
+#  0  : can write to path
+#  1  : don't write to path
+#  2  : if user selects to abort
+#  3  : path exists but isn't a file
+#
+# param1:
+#  path to be checked
+#
+prompt_if_overwrite() {
+	local path=$1
+
+	if [ -e "${path}" ] ; then
+
+		if [ ! -f "${path}" ] ; then
+			# "${path}" exists but isn't a file
+			printf "${path} exists and isn't a file, overwrite not attempted. Aborting."
+			return 3
+		fi
+
+		printf "%s\n" \
+			"The file ${path} already exists." \
+			"Should we overwrite it?"
+
+		select user_answer in 'Yes' 'No' 'Abort'
+		do
+			case "${user_answer}" in
+				'Yes')
+					return 0
+					;;
+				'No')
+					return 1
+					;;
+				'Abort')
+					return 2
+					;;
+			esac
+		done
+	fi
+
+	return 0
+}
+
+#
+# Check the global OPTIONS here whose ACTION
+# is "SETTINGS".
+#
+# Description:
+#  Opens the file that needs to be modified
+#
+action_settings() {
+
+	local file_to_modify
+	local option
+
+	if option="--modify-boilerplate" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		if [ -n "${ARGS["${option}"]}" ] ; then
+			file_to_modify="${ARGS["${option}"]}"
+		else
+			file_to_modify="$( get_from_current_user_config_file "BOILERPLATE" )"
+			return_if_error
+		fi
+
+		file_to_modify="${quicktest_BOILERPLATES_PATH}/${file_to_modify}"
+
+		open_file "${file_to_modify}"
+		return_if_error
+
+	elif option="--modify-user-config-file" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		if [ -n "${ARGS["${option}"]}" ] ; then
+			file_to_modify="${quicktest_USER_CONFIG_PATH}/${ARGS["${option}"]}"
+		else
+			file_to_modify="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+			return_if_error
+		fi
+
+		# if the file specified in ARGS doesn't exist
+		# create a new user default template file
+		if [ ! -f "${file_to_modify}" ] ; then
+			cp "${quicktest_USER_CONFIG_TEMPLATE}" "${file_to_modify}"
+		fi
+
+		open_file "${file_to_modify}"
+		return_if_error
+
+	elif option="--register-action" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		key_for_action="$( awk '{print $1}' <<<"${ARGS["${option}"]}" )"
+		action_name="$( awk '{print $2}' <<<"${ARGS["${option}"]}" )"
+
+		prompt_if_overwrite "${COMMANDS_PATH}/${action_name}"
+
+		retval=$?
+
+		if [ "${retval}" == "2" ] ; then
+			return 0
+		elif [ "${retval}" == "3" ] ; then
+			return 1
+		elif [ "${retval}" == "1" ] ; then
+			return 0
+		fi
+
+		awk -v key_for_action="${key_for_action}" '
+		{
+			gsub(/___KEY_FOR_ACTION___/, key_for_action, $0)
+			print
+		}
+		' "${quicktest_REGISTER_ACTION_TEMPLATE}" > "${COMMANDS_PATH}/${action_name}"
+
+		return_if_error
+
+		chmod +x "${COMMANDS_PATH}/${action_name}"
+
+		return_if_error
+
+		quicktest_colored_print "\nRegistered action ${action_name}\n\n"
+
+	elif option="--remove-action" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		action_name="${ARGS["${option}"]}"
+		rm "${COMMANDS_PATH}/${action_name}"
+
+		return_if_error
+
+		quicktest_colored_print "\nRemoved action ${action_name}\n\n"
+	fi
+}
+
+#
+# param1:
+#  user config file
+#
+# Check the global OPTIONS here whose ACTION
+# is "INFO".
+#
+# Description:
+#  Displays the info asked.
+#
+action_info() {
+
+	local option
+
+	if option="--help" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		quicktest_help
+
+	elif option="--show-boilerplates" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		show_all_boilerplates
+
+	elif option="--show-history" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		local history_cnt
+
+		if [ -n "${ARGS["${option}"]}" ] ; then
+			history_cnt="${ARGS["${option}"]}"
+		else
+			# default history count
+			history_cnt="${quicktest_HISTORY_COUNT}"
+		fi
+
+		show_file_edit_history "${history_cnt}"
+
+	elif option="--show-user-config-files" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		show_all_user_config_files
+
+	elif option="--verbose" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		verbose_output
+
+	fi
+
+	return_if_error
+}
+
+#
+# param1:
+#  user config file
+#
+# Check the global OPTIONS here whose ACTION
+# is "TEST".
+#
+# Description:
+#  Constructs testfile name and detects its
+#  various attributes. Finally opens the tesfile.
+#
+action_test() {
+
+	local option
+	local boilerplate_path
+	local instance
+	local testfile_path
+	local retval
+
+	#
+	# If instance arg was given, use that instance and set it in real time data
+	# else get the instance to use from real time data's key
+	# INSTANCE i.e. the instance last used.
+	#
+	if option="--instance" && [ -n "${OPTIONS["${option}"]}" ] ; then
+		instance="${ARGS["${option}"]}"
+		update_real_time_data "INSTANCE" "${ARGS["${option}"]}"
+		return_if_error
+	else
+		instance="$( get_from_real_time_data "INSTANCE" )"
+		return_if_error
+	fi
+
+	mkdir -p "$(dirname "${instance}")"
+
+	testfile_path="${quicktest_TEST_PATH}/${instance}"
+
+	#
+	# Only if --new option is supplied, boilerplate code
+	# is copied into the testfile overwriting all its previous
+	# contents (user is prompted if overwriting).
+	#
+	if option="--new" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		# 1 means copy, 0 means don't copy and 2 means abort
+		prompt_if_overwrite "${testfile_path}"
+
+		retval=$?
+
+		if [ "${retval}" == "2" ] ; then
+			return 0
+		elif [ "${retval}" == "3" ] ; then
+			return 1
+		elif [ "${retval}" == "0" ] ; then
+			copy_boilerplate_code_to_file_at_path "${testfile_path}"
+			return_if_error
+		fi
+	fi
+
+	open_file "${testfile_path}"
+	return_if_error
+}
+
+#
+# param1:
+#  user config file
+#
+# Check the global OPTIONS here whose ACTION
+# is "OTHER".
+#
+# Description:
+#  Check for OPTIONS categorized under "OTHER"
+#  here and perform operations accordinly.
+#
+action_other() {
+
+	local user_config_file_path="$1"
+	local instance
+	local option
+	local store_path
+	local retval
+	local testfile_path
+
+	if option="--get-boilerplate-code" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		store_path="${ARGS["${option}"]}"
+
+		# 1 means copy, 0 means don't copy and 2 means abort
+		prompt_if_overwrite "${store_path}"
+
+		retval=$?
+
+		if [ "${retval}" == "2" ] ; then
+			return 0
+		elif [ "${retval}" == "3" ] ; then
+			return 1
+		elif [ "${retval}" == "0" ] ; then
+			copy_boilerplate_code_to_file_at_path "${store_path}"
+			return_if_error
+		fi
+
+	elif option="--save-to-path" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		if option="--instance" && [ -n "${OPTIONS["${option}"]}" ] ; then
+			instance="${ARGS["${option}"]}"
+		else
+			instance="$(get_from_real_time_data "INSTANCE")"
+			return_if_error
+		fi
+
+		testfile_path="${quicktest_TEST_PATH}/${instance}"
+		store_path="${ARGS["${option}"]}"
+
+		prompt_if_overwrite "${store_path}"
+
+		retval=$?
+
+		if [ "${retval}" == "2" ] ; then
+			return 0
+		elif [ "${retval}" == "3" ] ; then
+			return 1
+		elif [ "${retval}" == "0" ] ; then
+			save_file_to_path "${testfile_path}" "${store_path}"
+			return_if_error
+		fi
+	fi
+}
+
+#
+# Just parses options and according to
+# global variable ACTION that was set by
+# parse_options, it decides the type of
+# action to perform and calls appropriate func.
+#
+main() {
+	local user_config_file_path
+
+	#
+	# We will use `return_if_error` which is an alias defined in
+	# quicktest_interface that would print file, line and funcname
+	# where it was called and return with exit status 1.
+	#
+
+	parse_options "$@"
+	return_if_error
+	# supplied options are keys in array OPTIONS[], readonly
+	# args supplied to options are stored in array ARGS[], readonly
+	# global variable ACTION is set according to the options supplied
+	# This would help to categorize operations and avoid cluttered code
+
+
+	#
+	# Well as we know, even how we open a file is determined by
+	# user config file.
+	# --recover is helpful in cases where the current user config file
+	# is corrupted and it won't let you do anything.
+	#
+	# --recover will just set current user config file to
+	# quicktest's default config file.
+	#
+	# --recover has top most priority
+	#
+	if [ -n "${OPTIONS["--recover"]}" ] ; then
+		update_real_time_data "CURRENT_USER_CONFIG_FILE" "${quicktest_DEFAULT_USER_CONFIG}"
+		return_if_error
+		return 0
+	fi
+
+
+	#
+	# user config file is the first need of the script.
+	# Every action is determined based on it, like how to open
+	# a file and etc.
+	# So first thing to do is set the user config file that we are going
+	# to use.
+	#
+	if [ -n "${OPTIONS["--user-config"]}" ] ; then
+
+		user_config_file_path="${quicktest_USER_CONFIG_PATH}/${ARGS["--user-config"]}"
+
+		if [ -f "${user_config_file_path}" ] ; then
+			update_real_time_data "CURRENT_USER_CONFIG_FILE" "${user_config_file_path}"
+			return_if_error
+		else
+			printf_err "${user_config_file_path}: No such user config file found"
+			return 1
+		fi
+	else
+		user_config_file_path="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+		return_if_error
+	fi
+
+
+	if [ "${user_config_file_path}" == "${quicktest_DEFAULT_USER_CONFIG}" ] ; then
+		# This means user config file is still at default
+		# and a new one hasn't been set.
+		printf_err_func \
+			"\nuser config file hasn't been set yet and points to default config file." \
+			"\nCreate a new user config file as follows:" \
+			"\n\t${quicktest_PROG_NAME} -mucf <new_user_config_file_name>" \
+			"\nThen to use it:" \
+			"\n\t${quicktest_PROG_NAME} -uc <newly_created_user_config_file_name>" \
+			"\n"
+	fi
+
+	case "${ACTION}" in
+
+		"INFO")
+			action_info
+			;;
+		"OTHER")
+			action_other
+			;;
+		"SETTINGS")
+			action_settings
+			;;
+		"TEST")
+			action_test
+			;;
+		*)
+			printf_err \
+				"ACTION variable not set" \
+				"Can't determine the type of action"
+			return 1
+			;;
+
+	esac
+
+	return_if_error
+
+	return 0
+}
+
+main "$@"
