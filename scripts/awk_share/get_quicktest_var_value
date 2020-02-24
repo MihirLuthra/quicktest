@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+
+export SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
+
+source "${SCRIPTS_PATH}/quicktest_interface"
+
+get_quicktest_var_value "$@"

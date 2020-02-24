@@ -6,6 +6,7 @@ readonly quicktest_SOURCE_GUARD="1"
 
 
 export SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
+export AWK_SHARE_PATH="${QUICKTEST_PATH}/scripts/awk_share"
 export AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
 
 
@@ -23,13 +24,10 @@ alias return_if_error='
 '
 shopt -s expand_aliases
 
-
-set -a
 readonly quicktest_COLOR='\033[1;34m' # purple
 readonly quicktest_ERR_COLOR='\033[0;31m' # red
 readonly quicktest_NORMAL_COLOR='\033[0m'
 readonly quicktest_PROG_NAME="${quicktest_PROG_NAME:-"quicktest"}"
-set +a
 
 printf_err_func() {
 	for fmt in "$@"
@@ -38,7 +36,6 @@ printf_err_func() {
 	done
 	echo >&2
 }
-export -f printf_err_func
 
 #
 # Well difference between printf_err_func and this func is
@@ -54,7 +51,6 @@ export -f printf_err_func
 printf_string_err() {
 	printf "${quicktest_ERR_COLOR}%s${quicktest_NORMAL_COLOR}\n" "$@" >&2
 }
-export -f printf_string_err
 
 #
 # param1:
@@ -90,7 +86,6 @@ quicktest_path_normalize() {
 # when being used by user.
 # result from quicktest_path_normalize doesn't have any.
 #
-set -a
 readonly quicktest_DATA_PATH="${QUICKTEST_PATH}/data"
 readonly quicktest_TEST_PATH="${quicktest_DATA_PATH}/tests_dir"
 readonly quicktest_BOILERPLATES_PATH="${quicktest_DATA_PATH}/boilerplates"
@@ -102,7 +97,6 @@ readonly quicktest_DEFAULT_INSTANCE="${quicktest_TEST_PATH}/.default"
 readonly quicktest_DEFAULT_BOILERPLATE="${quicktest_BOILERPLATES_PATH}/.default"
 readonly quicktest_REGISTER_ACTION_TEMPLATE="${quicktest_DATA_PATH}/data_files/register_action_template"
 readonly quicktest_HISTORY_COUNT="7"
-set +a
 
 #
 # printf is quicktest's default color
@@ -139,7 +133,6 @@ get_value_for_key() {
 
 	awk -v key="${key}" -f "${AWK_FILES_PATH}/get_value_for_key.awk" "${file}"
 }
-export -f get_value_for_key
 
 #
 # Description:
@@ -194,7 +187,6 @@ set_value_for_key() {
 	mv "${temp_file}" "${file}"
 
 }
-export -f set_value_for_key
 
 update_real_time_data() {
 	local key=$1 ; shift
@@ -332,7 +324,6 @@ get_quicktest_var_value() {
 
 	printf "${value}"
 }
-export -f get_quicktest_var_value
 
 #
 # Description:
@@ -357,11 +348,13 @@ replace_quicktest_vars() {
 		"___FILE_TO_OPEN___"
 	)
 
-	#updated_input="$(
+	updated_input="$(
 		awk \
-			-v BASH_QUICKTEST_VARS="${QUICKTEST_VARS[*]}" \
-			-f "${AWK_FILES_PATH}/quicktest_var_replaces.awk" <<<"${input}"
-	#)"
+		-v awk_share_path="${AWK_SHARE_PATH}" \
+		-v qt_shell="${BASH}" \
+		-v BASH_QUICKTEST_VARS="${QUICKTEST_VARS[*]}" \
+		-f "${AWK_FILES_PATH}/quicktest_var_replaces.awk" <<<"${input}"
+	)"
 
 	return_if_error
 

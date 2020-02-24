@@ -4,6 +4,8 @@
 # This awk script needs BASH_QUICKTEST_VARS variable to be set
 # by the caller containing space separated variables.
 #
+# It expects awk_share_path to be set by the caller.
+#
 # This script will print an updated input with all quicktest
 # variables replaced.
 # The variables are replaced by calling `get_quicktest_var_value`
@@ -13,6 +15,11 @@ BEGIN {
 	split(BASH_QUICKTEST_VARS, QUICKTEST_VARS, " ")
 }
 
+function get_quicktest_var_value(quicktest_var) {
+	funcpath = awk_share_path"/get_quicktest_var_value"
+	return qt_shell" "funcpath" "quicktest_var" ; printf \"\n$?\""
+}
+
 function get_quicktest_var_replacement(quicktest_var) {
 
 	#
@@ -20,7 +27,7 @@ function get_quicktest_var_replacement(quicktest_var) {
 	# and then printing exit status on last line which is then captured
 	# and if it is non-zero, awk script terminates
 	#
-	cmd = "get_quicktest_var_value "quicktest_var" ; printf \"\n$?\""
+	cmd = get_quicktest_var_value(quicktest_var)
 
 	res = ""
 	last_res = ""
