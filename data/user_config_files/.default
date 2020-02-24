@@ -1,2 +1,2 @@
 HOW_TO_OPEN_EDITOR   vim ___FILE_TO_OPEN___
-BOILERPLATE          ___TESTPATH___/../boilerplates/.default
+BOILERPLATE          .default
