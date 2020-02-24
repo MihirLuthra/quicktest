@@ -129,7 +129,7 @@ prompt_if_overwrite() {
 
 		if [ ! -f "${path}" ] ; then
 			# "${path}" exists but isn't a file
-			printf "${path} exists and isn't a file, overwrite not attempted. Aborting."
+			printf "${path} exists and isn't a file, overwrite not attempted. Aborting.\n"
 			return 3
 		fi
 
