@@ -1,0 +1,30 @@
+#! /usr/bin/env bash
+
+export SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
+export AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
+
+source "${SCRIPTS_PATH}/quicktest_interface"
+
+main() {
+	local key_for_action="$1" ; shift
+
+	local action
+	local quoted_args
+	local action_with_args
+
+	action="$( get_from_current_user_config_file "${key_for_action}" )"
+	return_if_error
+
+	for arg in "$@"
+	do
+		quoted_args="${quoted_args}\"${arg}\" "
+	done
+
+	action_with_args="${action} ${quoted_args}"
+
+	echo ":${action_with_args}:"
+
+	${BASH} -c "${action_with_args}"
+}
+
+main "$@"
