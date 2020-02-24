@@ -22,7 +22,7 @@ main() {
 
 	action_with_args="${action} ${quoted_args}"
 
-	echo ":${action_with_args}:"
+	printf "\n${action_with_args}\n\n"
 
 	${BASH} -c "${action_with_args}"
 }
