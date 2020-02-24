@@ -6,6 +6,21 @@ export AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
 
 source "${SCRIPTS_PATH}/quicktest_interface"
 
+#
+# Shifts args in a space delimited
+# string.
+#
+shift_args() {
+	local arg_schema=$1 ; shift
+
+	awk -F' ' '{
+		for (i = 1 ; i <= NF - 1 ; ++i) {
+			$i=$(i+1)
+		}
+		$NF=""
+		printf $0
+	}' <<<"${arg_schema}"
+}
 
 #
 # This function would set 2 "readonly" global arrays and one "readonly" gloabal var
@@ -42,11 +57,26 @@ parse_options() {
 	declare -gA OPTIONS
 	declare -g ACTION
 
-	# -1 if optional one arg
-	# otherwise count of args needed
-	local next_is_arg="0"
+	#
+	# arg schema contains ' ' separated
+	# values.
+	# The values can be 1, -1 or 0
+	#
+	# For example,
+	#
+	#  arg_schema="1 1 -1"
+	# would be first 2 args are mandatory and
+	# last one is optional.
+	#
+	# -1 can't be followed by a 1 i.e.
+	# an optional arg has to be at the end.
+	#
+	# if no args then just "0"
+	#
+	local arg_schema="0"
 
-	local prev_opt
+	local current_arg_requirement="0"
+	local prev_opt="${quicktest_PROG_NAME}"
 	local is_arg
 	local flag_arg_not_found="0"
 
@@ -62,108 +92,102 @@ parse_options() {
 			-b|--boilerplate)
 				option="--boilerplate"
 				OPTIONS["${option}"]="1"
-				next_is_arg="1"
+				arg_schema="1"
 				;;
 			-gbc|--get-boilerplate-code)
 				option="--get-boilerplate-code"
 				OPTIONS["${option}"]="1"
 				ACTION="OTHER"
-				next_is_arg="1"
+				arg_schema="1"
 				;;
 			-h|--help)
 				option="--help"
 				OPTIONS["${option}"]="1"
 				ACTION="INFO"
-				next_is_arg="0"
+				arg_schema="0"
 				;;
 			-i|--instance)
 				option="--instance"
 				OPTIONS["${option}"]="1"
-				next_is_arg="1"
+				arg_schema="1"
 				;;
 			-mb|--modify-boilerplate)
 				option="--modify-boilerplate"
 				OPTIONS["${option}"]="1"
 				ACTION="SETTINGS"
-				next_is_arg="-1"
+				arg_schema="-1"
 				;;
 			-mucf|--modify-user-config-file)
 				option="--modify-user-config-file"
 				OPTIONS["${option}"]="1"
 				ACTION="SETTINGS"
-				next_is_arg="-1"
+				arg_schema="-1"
 				;;
 			-n|--new)
 				option="--new"
 				OPTIONS["${option}"]="1"
-				next_is_arg="0"
+				arg_schema="0"
 				;;
 			-r|--recover)
 				option="--recover"
 				OPTIONS["${option}"]="1"
 				ACTION="OTHER"
-				next_is_arg="0"
+				arg_schema="0"
 				;;
 			-ra|--register-action)
 				option="--register-action"
 				OPTIONS["${option}"]="1"
 				ACTION="SETTINGS"
-				next_is_arg="2"
+				arg_schema="1 1"
 				;;
 			-rma|--remove-action)
 				option="--remove-action"
 				OPTIONS["${option}"]="1"
 				ACTION="SETTINGS"
-				next_is_arg="1"
+				arg_schema="1"
 				;;
 			-s|--save-to-path)
 				option="--save-to-path"
 				OPTIONS["${option}"]="1"
 				ACTION="OTHER"
-				next_is_arg="1"
+				arg_schema="1"
 				;;
 			-sb|--show-boilerplates)
 				option="--show-boilerplates"
 				OPTIONS["${option}"]="1"
 				ACTION="INFO"
-				next_is_arg="0"
+				arg_schema="0"
 				;;
 			-sh|--show-history)
 				option="--show-history"
 				OPTIONS["${option}"]="1"
 				ACTION="INFO"
-				next_is_arg="-1"
+				arg_schema="-1"
 				;;
 			-sucf|--show-user-config-files)
 				option="--show-user-config-files"
 				OPTIONS["${option}"]="1"
 				ACTION="INFO"
-				next_is_arg="0"
+				arg_schema="0"
 				;;
 			-uc|--user-config)
 				option="--user-config"
 				OPTIONS["${option}"]="1"
-				next_is_arg="1"
+				arg_schema="1"
 				;;
 			-v|--verbose)
 				option="--verbose"
 				OPTIONS["${option}"]="1"
 				ACTION="INFO"
-				next_is_arg="0"
+				arg_schema="0"
 				;;
 			*)
 				is_arg="1"
-
-				if [ "${next_is_arg}" -eq "0" ] ; then
+	
+				if [ "${current_arg_requirement}" -eq "0" ] ; then
 					usage
 					return 1
 				else
-					if [ "${next_is_arg}" -eq "-1" ] ; then
-						next_is_arg="0"
-					else
-						next_is_arg="$(expr "${next_is_arg}" - 1)"
-					fi
-
 					if [ -n "${ARGS["${prev_opt}"]}" ] ; then
 						ARGS["${prev_opt}"]="${ARGS["${prev_opt}"]} ${option}"
 					else
@@ -181,7 +205,12 @@ parse_options() {
 			return 1
 		fi
 
-		if [ "${next_is_arg}" -gt "0" ] ; then
+		current_arg_requirement="${arg_schema%% *}"
+		current_arg_requirement="${current_arg_requirement:-"0"}"
+
+		arg_schema="$( shift_args "${arg_schema}" )"
+
+		if [ "${current_arg_requirement}" -eq "1" ] ; then
 			flag_arg_not_found="1"
 			# will be set to 0 if found
 		fi
