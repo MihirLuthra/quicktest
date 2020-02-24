@@ -490,6 +490,7 @@ main() {
 		return_if_error
 	fi
 
+	user_config_file_path="$( quicktest_path_normalize "${user_config_file_path}" )"
 
 	if [ "${user_config_file_path}" == "${quicktest_DEFAULT_USER_CONFIG}" ] ; then
 		# This means user config file is still at default
