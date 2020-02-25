@@ -327,9 +327,9 @@ action_test() {
 		return_if_error
 	fi
 
-	mkdir -p "$(dirname "${instance}")"
-
 	testfile_path="${quicktest_TEST_PATH}/${instance}"
+
+	mkdir -p "$(dirname "${testfile_path}")"
 
 	#
 	# Only if --new option is supplied, boilerplate code
