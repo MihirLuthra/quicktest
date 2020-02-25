@@ -190,11 +190,13 @@ action_settings() {
 		arg="$( get_arg "${option}" "1" )"
 
 		if [ -n "${arg}" ] ; then
-			file_to_modify="${quicktest_USER_CONFIG_PATH}/${arg}"
+			file_to_modify="${arg}"
 		else
 			file_to_modify="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
 			return_if_error
 		fi
+
+		file_to_modify="${quicktest_USER_CONFIG_PATH}/${file_to_modify}"
 
 		# if the file specified in ARGS doesn't exist
 		# create a new user default template file
@@ -370,7 +372,6 @@ action_test() {
 #
 action_other() {
 
-	local user_config_file_path="$1"
 	local instance
 	local option
 	local store_path
@@ -429,6 +430,7 @@ action_other() {
 # action to perform and calls appropriate func.
 #
 main() {
+	local user_config_file_name
 	local user_config_file_path
 	local arg
 	local option
@@ -474,25 +476,26 @@ main() {
 	#
 	if option="--user-config" && [ -n "${OPTIONS["${option}"]}" ] ; then
 		
-		arg="$( get_arg "${option}" "1" )"
+		user_config_file_name="$( get_arg "${option}" "1" )"
 
-		user_config_file_path="${quicktest_USER_CONFIG_PATH}/${arg}"
+		user_config_file_path="${quicktest_USER_CONFIG_PATH}/${user_config_file_name}"
 
 		if [ -f "${user_config_file_path}" ] ; then
-			update_real_time_data "CURRENT_USER_CONFIG_FILE" "${user_config_file_path}"
+			update_real_time_data "CURRENT_USER_CONFIG_FILE" "${user_config_file_name}"
 			return_if_error
 		else
-			printf_err "${user_config_file_path}: No such user config file found"
+			printf_err "${user_config_file_name}: No such user config file found"
 			return 1
 		fi
 	else
-		user_config_file_path="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+		user_config_file_name="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
 		return_if_error
+		user_config_file_path="${quicktest_USER_CONFIG_PATH}/${user_config_file_name}"
 	fi
 
 	user_config_file_path="$( quicktest_path_normalize "${user_config_file_path}" )"
 
-	if [ "${user_config_file_path}" == "${quicktest_DEFAULT_USER_CONFIG}" ] ; then
+	if [ "${user_config_file_name}" == "${quicktest_DEFAULT_USER_CONFIG}" ] ; then
 		# This means user config file is still at default
 		# and a new one hasn't been set.
 		printf_err_func \

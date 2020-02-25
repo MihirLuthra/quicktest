@@ -92,9 +92,9 @@ readonly quicktest_BOILERPLATES_PATH="${quicktest_DATA_PATH}/boilerplates"
 readonly quicktest_USER_CONFIG_PATH="${quicktest_DATA_PATH}/user_config_files"
 readonly quicktest_REAL_TIME_DATA="${quicktest_DATA_PATH}/data_files/real_time_data"
 readonly quicktest_USER_CONFIG_TEMPLATE="${quicktest_DATA_PATH}/data_files/user_config_template"
-readonly quicktest_DEFAULT_USER_CONFIG="${quicktest_USER_CONFIG_PATH}/.default"
-readonly quicktest_DEFAULT_INSTANCE="${quicktest_TEST_PATH}/.default"
-readonly quicktest_DEFAULT_BOILERPLATE="${quicktest_BOILERPLATES_PATH}/.default"
+readonly quicktest_DEFAULT_USER_CONFIG=".default"
+readonly quicktest_DEFAULT_INSTANCE=".default"
+readonly quicktest_DEFAULT_BOILERPLATE=".default"
 readonly quicktest_REGISTER_ACTION_TEMPLATE="${quicktest_DATA_PATH}/data_files/register_action_template"
 readonly quicktest_HISTORY_COUNT="7"
 
@@ -225,9 +225,11 @@ get_from_real_time_data() {
 update_data_in_current_user_config_file() {
 	local key="$1" ; shift
 	local value="$1" ; shift
+	local user_config_file_name
 	local user_config_file_path
 
-	user_config_file_path="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+	user_config_file_name="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+	user_config_file_path="${quicktest_USER_CONFIG_PATH}/${user_config_file_name}"
 
 	return_if_error
 
@@ -239,10 +241,12 @@ update_data_in_current_user_config_file() {
 get_from_current_user_config_file() {
 
 	local key="$1" ; shift
+	local user_config_file_name
 	local user_config_file_path
 	local value
 
-	user_config_file_path="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+	user_config_file_name="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
+	user_config_file_path="${quicktest_USER_CONFIG_PATH}/${user_config_file_name}"
 
 	return_if_error
 

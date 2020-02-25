@@ -105,16 +105,14 @@ verbose_output() {
 	local instance
 	local boilerplate_name
 	local testfile_name
-	local user_config_file_path
+	local user_config_file_name
 	local outfile
 
 	instance="$( get_from_real_time_data "INSTANCE" )"
 
-	user_config_file_path="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
-	user_config_file_path="$( quicktest_path_normalize "${user_config_file_path}" )"
+	user_config_file_name="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
 
-	boilerplate_path="$( get_from_current_user_config_file "BOILERPLATE" )"
-	boilerplate_path="$( quicktest_path_normalize "${boilerplate_path}" )"
+	boilerplate_name="$( get_from_current_user_config_file "BOILERPLATE" )"
 
 	outfile="$( replace_quicktest_vars "___OUTPUT___" )"
 
@@ -128,10 +126,10 @@ verbose_output() {
 	printf "\t${outfile}\n"
 
 	quicktest_colored_print "Current user config file:"
-	printf "\t${user_config_file_path}\n"
+	printf "\t${user_config_file_name}\n"
 
 	quicktest_colored_print "Current boilerplate:"
-	printf "\t${boilerplate_path}\n"
+	printf "\t${boilerplate_name}\n"
 }
 
 
