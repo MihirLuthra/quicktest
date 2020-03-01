@@ -282,7 +282,7 @@ get_from_current_user_config_file() {
 #  ___INSTANCE_PATH___
 #      -> Path to current testfile
 #
-#  ___TESTFILENAMEWITHOUTEXTENSION___
+#  ___INSTANCE_NAME_WITHOUT_EXTENSION___
 #      -> Testfile name with extension stripped
 #
 #  ___OUTPUT___
@@ -322,7 +322,7 @@ get_quicktest_var_value() {
 			value="${quicktest_TEST_PATH}"
 			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
 			;;
-		'___TESTFILENAMEWITHOUTEXTENSION___')
+		'___INSTANCE_NAME_WITHOUT_EXTENSION___')
 			value="$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
 			value="${value%.*}"
 			;;
@@ -362,7 +362,7 @@ replace_quicktest_vars() {
 		'___TESTPATH___'
 		'___TEST_DIR_NAME___'
 		'___INSTANCE_PATH___'
-		'___TESTFILENAMEWITHOUTEXTENSION___'
+		'___INSTANCE_NAME_WITHOUT_EXTENSION___'
 		'___OUTPUT___'
 		'___FILE_TO_OPEN___'
 	)
