@@ -306,6 +306,9 @@ get_quicktest_var_value() {
 		'___QUICKTEST_PATH___')
 			value="${QUICKTEST_PATH}"
 			;;
+		'___QUICKTEST_DATAPATH___')
+			value="${quicktest_DATA_PATH}"
+			;;
 		'___INSTANCE___')
 			value="$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
 			;;
@@ -351,6 +354,7 @@ replace_quicktest_vars() {
 
 	QUICKTEST_VARS=(
 		'___QUICKTEST_PATH___'
+		'___QUICKTEST_DATAPATH___'
 		'___INSTANCE___'
 		'___TESTPATH___'
 		'___TESTFILEPATH___'
