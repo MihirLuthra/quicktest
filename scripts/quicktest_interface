@@ -279,14 +279,14 @@ get_from_current_user_config_file() {
 #  ___TESTPATH___
 #      -> Path where testfiles are stored
 #
-#  ___TESTFILEPATH___
+#  ___INSTANCE_PATH___
 #      -> Path to current testfile
 #
 #  ___TESTFILENAMEWITHOUTEXTENSION___
 #      -> Testfile name with extension stripped
 #
 #  ___OUTPUT___
-#      -> Just for convenience; is equivalent to ___TESTFILEPATH___/___INSTANCE___".out"
+#      -> Just for convenience; is equivalent to ___INSTANCE_PATH___/___INSTANCE___".out"
 #
 #  ___FILE_TO_OPEN___
 #      -> Represents that file that is getting opened with text editor.
@@ -318,7 +318,7 @@ get_quicktest_var_value() {
 		'___TEST_DIR_NAME___')
 			value="$( basename "${quicktest_TEST_PATH}" )"
 			;;
-		'___TESTFILEPATH___')
+		'___INSTANCE_PATH___')
 			value="${quicktest_TEST_PATH}"
 			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
 			;;
@@ -361,7 +361,7 @@ replace_quicktest_vars() {
 		'___INSTANCE___'
 		'___TESTPATH___'
 		'___TEST_DIR_NAME___'
-		'___TESTFILEPATH___'
+		'___INSTANCE_PATH___'
 		'___TESTFILENAMEWITHOUTEXTENSION___'
 		'___OUTPUT___'
 		'___FILE_TO_OPEN___'
