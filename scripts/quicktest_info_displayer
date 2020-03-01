@@ -14,6 +14,7 @@ usage() {
 		"  [-gbc|--get-boilerplate-code path_to_new_file]" \
  		"  [-h|--help]" \
 		"  [-i|--instance instance_name]" \
+		"  [-id|--instance-directory instance_dir]" \
 		"  [-mb|--modify-boilerplate [boilerplate_file]]" \
 		"  [-mucf|--modify-user-config-file] [user_config_file]]" \
 		"  [-n|--new]" \
@@ -45,6 +46,9 @@ ${quicktest_COLOR}-h|--help:${normal_color}
 
 ${quicktest_COLOR}-i|--instance <instance_name>:${normal_color}
 	The name of the test instance.
+
+${quicktest_COLOR}-id|--instance-directory <instance_dir_name>:${normal_color}
+	The name of the directory where current instance should be created.
 
 ${quicktest_COLOR}-mb|--modify-boilerplate [boilerplate_file_name]:${normal_color}
 	Opens the current boilerplate file.
