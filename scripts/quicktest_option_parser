@@ -111,6 +111,11 @@ parse_options() {
 				OPTIONS["${option}"]='1'
 				arg_schema='1'
 				;;
+			-id|--instance-directory)
+				option='--instance-directory'
+				OPTIONS["${option}"]='1'
+				arg_schema='1'
+				;;
 			-mb|--modify-boilerplate)
 				option='--modify-boilerplate'
 				OPTIONS["${option}"]='1'

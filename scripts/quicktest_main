@@ -312,6 +312,7 @@ action_open_instance() {
 	local option
 	local boilerplate_path
 	local instance
+	local instance_dir
 	local instance_path
 	local retval
 
@@ -320,6 +321,18 @@ action_open_instance() {
 	# else get the instance to use from real time data's key
 	# INSTANCE i.e. the instance last used.
 	#
+
+	if option='--instance-directory' && [ -n "${OPTIONS["${option}"]}" ] ; then
+		instance_dir="$( get_arg "${option}" "1" )"
+		update_real_time_data "INSTANCE_DIR" "${instance_dir}"
+		return_if_error
+	else
+		instance_dir="$( get_from_real_time_data "INSTANCE_DIR" )"
+		return_if_error
+	fi
+
+	instance_dir="${quicktest_DATA_PATH}/${instance_dir}"
+
 	if option="--instance" && [ -n "${OPTIONS["${option}"]}" ] ; then
 		instance="$( get_arg "${option}" "1" )"
 		update_real_time_data "INSTANCE" "${instance}"
@@ -329,9 +342,9 @@ action_open_instance() {
 		return_if_error
 	fi
 
-	instance_path="${quicktest_TEST_PATH}/${instance}"
+	instance_path="${instance_dir}/${instance}"
 
-	mkdir -p "$(dirname "${instance_path}")"
+	mkdir -p "$( dirname "${instance_path}" )"
 
 	#
 	# Only if --new option is supplied, boilerplate code
