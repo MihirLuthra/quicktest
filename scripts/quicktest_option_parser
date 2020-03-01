@@ -27,7 +27,7 @@ shift_args() {
 #
 # OPTIONS:
 #  All passed arguments in it are keys in this array
-#  with value '1'
+#  with value 1
 #
 # ARGS:
 #  It contains arguments corresponding to set OPTIONS.
@@ -71,125 +71,125 @@ parse_options() {
 	# -1 can't be followed by a 1 i.e.
 	# an optional arg has to be at the end.
 	#
-	# if no args then just '0'
+	# if no args then just 0
 	#
-	local arg_schema='0'
+	local arg_schema=0
 
-	local current_arg_requirement='0'
+	local current_arg_requirement=0
 	local prev_opt="${quicktest_PROG_NAME}"
 	local is_arg
-	local flag_arg_not_found='0'
+	local flag_arg_not_found=0
 
 	ACTION='OPEN_INSTANCE'
 
-	while [ $# -gt '0' ]
+	while [ $# -gt 0 ]
 	do
 		option=$1 ; shift
-		is_arg='0'
+		is_arg=0
 
 		case "${option}" in
 
 			-b|--boilerplate)
 				option='--boilerplate'
-				OPTIONS["${option}"]='1'
-				arg_schema='1'
+				OPTIONS["${option}"]=1
+				arg_schema=1
 				;;
 			-gbc|--get-boilerplate-code)
 				option='--get-boilerplate-code'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='OTHER'
-				arg_schema='1'
+				arg_schema=1
 				;;
 			-h|--help)
 				option='--help'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='INFO'
-				arg_schema='0'
+				arg_schema=0
 				;;
 			-i|--instance)
 				option='--instance'
-				OPTIONS["${option}"]='1'
-				arg_schema='1'
+				OPTIONS["${option}"]=1
+				arg_schema=1
 				;;
 			-id|--instance-directory)
 				option='--instance-directory'
-				OPTIONS["${option}"]='1'
-				arg_schema='1'
+				OPTIONS["${option}"]=1
+				arg_schema=1
 				;;
 			-mb|--modify-boilerplate)
 				option='--modify-boilerplate'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='SETTINGS'
 				arg_schema='-1'
 				;;
 			-mucf|--modify-user-config-file)
 				option='--modify-user-config-file'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='SETTINGS'
 				arg_schema='-1'
 				;;
 			-n|--new)
 				option='--new'
-				OPTIONS["${option}"]='1'
-				arg_schema='0'
+				OPTIONS["${option}"]=1
+				arg_schema=0
 				;;
 			-r|--recover)
 				option='--recover'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='OTHER'
-				arg_schema='0'
+				arg_schema=0
 				;;
 			-ra|--register-action)
 				option='--register-action'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='SETTINGS'
 				arg_schema='1 1'
 				;;
 			-rma|--remove-action)
 				option='--remove-action'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='SETTINGS'
-				arg_schema='1'
+				arg_schema=1
 				;;
 			-s|--save-to-path)
 				option='--save-to-path'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='OTHER'
-				arg_schema='1'
+				arg_schema=1
 				;;
 			-sb|--show-boilerplates)
 				option='--show-boilerplates'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='INFO'
-				arg_schema='0'
+				arg_schema=0
 				;;
 			-sh|--show-history)
 				option='--show-history'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='INFO'
 				arg_schema='-1'
 				;;
 			-sucf|--show-user-config-files)
 				option='--show-user-config-files'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='INFO'
-				arg_schema='0'
+				arg_schema=0
 				;;
 			-uc|--user-config)
 				option='--user-config'
-				OPTIONS["${option}"]='1'
-				arg_schema='1'
+				OPTIONS["${option}"]=1
+				arg_schema=1
 				;;
 			-v|--verbose)
 				option='--verbose'
-				OPTIONS["${option}"]='1'
+				OPTIONS["${option}"]=1
 				ACTION='INFO'
-				arg_schema='0'
+				arg_schema=0
 				;;
 			*)
-				is_arg='1'
+				is_arg=1
 	
-				if [ "${current_arg_requirement}" -eq '0' ] ; then
+				if [ "${current_arg_requirement}" -eq 0 ] ; then
 					usage
 					return 1
 				else
@@ -199,35 +199,35 @@ parse_options() {
 						ARGS["${prev_opt}"]="${option}"
 					fi
 
-					flag_arg_not_found='0'
+					flag_arg_not_found=0
 				fi
 
 				;;
 		esac
 
-		if [ "${flag_arg_not_found}" -eq '1' ] ; then
+		if [ "${flag_arg_not_found}" -eq 1 ] ; then
 			usage
 			return 1
 		fi
 
 		current_arg_requirement="${arg_schema%% *}"
-		current_arg_requirement="${current_arg_requirement:-'0'}"
+		current_arg_requirement="${current_arg_requirement:-0}"
 
 		arg_schema="$( shift_args "${arg_schema}" )"
 
-		if [ "${current_arg_requirement}" -eq '1' ] ; then
-			flag_arg_not_found='1'
+		if [ "${current_arg_requirement}" -eq 1 ] ; then
+			flag_arg_not_found=1
 			# will be set to 0 if found
 		fi
 
-		if [ "${is_arg}" -eq '0' ] ; then
+		if [ "${is_arg}" -eq 0 ] ; then
 			prev_opt="${option}"
 		fi
 
 	done
 
 
-	if [ "${flag_arg_not_found}" -eq '1' ] ; then
+	if [ "${flag_arg_not_found}" -eq 1 ] ; then
 		usage
 		return 1
 	fi
