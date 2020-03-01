@@ -44,6 +44,8 @@ function get_quicktest_var_replacement(quicktest_var) {
 		last_res = res
 	}
 
+	close(cmd)
+
 	# res contains the exit status
 	if (res != 0) {
 		exit 1
