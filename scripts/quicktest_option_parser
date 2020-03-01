@@ -37,7 +37,7 @@ shift_args() {
 #  Options passed belong to a specific niche, so we just set ACTION
 #  variable accordingly.
 #
-#   'TEST':
+#   'OPEN_INSTANCE':
 #     This key is set by default if no other key is set.
 #   'SETTINGS':
 #     This key is set if some settings, like setting user config files,
@@ -80,7 +80,7 @@ parse_options() {
 	local is_arg
 	local flag_arg_not_found='0'
 
-	ACTION='TEST'
+	ACTION='OPEN_INSTANCE'
 
 	while [ $# -gt '0' ]
 	do

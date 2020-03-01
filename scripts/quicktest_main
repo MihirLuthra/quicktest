@@ -301,18 +301,18 @@ action_info() {
 #  user config file
 #
 # Check the global OPTIONS here whose ACTION
-# is "TEST".
+# is "OPEN_INSTANCE".
 #
 # Description:
 #  Constructs testfile name and detects its
 #  various attributes. Finally opens the tesfile.
 #
-action_test() {
+action_open_instance() {
 
 	local option
 	local boilerplate_path
 	local instance
-	local testfile_path
+	local instance_path
 	local retval
 
 	#
@@ -329,9 +329,9 @@ action_test() {
 		return_if_error
 	fi
 
-	testfile_path="${quicktest_TEST_PATH}/${instance}"
+	instance_path="${quicktest_TEST_PATH}/${instance}"
 
-	mkdir -p "$(dirname "${testfile_path}")"
+	mkdir -p "$(dirname "${instance_path}")"
 
 	#
 	# Only if --new option is supplied, boilerplate code
@@ -341,7 +341,7 @@ action_test() {
 	if option="--new" && [ -n "${OPTIONS["${option}"]}" ] ; then
 
 		# 1 means copy, 0 means don't copy and 2 means abort
-		prompt_if_overwrite "${testfile_path}"
+		prompt_if_overwrite "${instance_path}"
 
 		retval=$?
 
@@ -350,12 +350,12 @@ action_test() {
 		elif [ "${retval}" == "3" ] ; then
 			return 1
 		elif [ "${retval}" == "0" ] ; then
-			copy_boilerplate_code_to_file_at_path "${testfile_path}"
+			copy_boilerplate_code_to_file_at_path "${instance_path}"
 			return_if_error
 		fi
 	fi
 
-	open_file "${testfile_path}"
+	open_file "${instance_path}"
 	return_if_error
 }
 
@@ -518,8 +518,8 @@ main() {
 		"SETTINGS")
 			action_settings
 			;;
-		"TEST")
-			action_test
+		"OPEN_INSTANCE")
+			action_open_instance
 			;;
 		*)
 			printf_err \
