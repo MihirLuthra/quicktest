@@ -122,16 +122,16 @@ verbose_output() {
 	boilerplate_name="$( get_from_current_user_config_file "BOILERPLATE" )"
 
 	quicktest_colored_print "Testing path:"
-   	printf "\t${quicktest_TEST_PATH}\n"
+	printf "${quicktest_TEST_PATH}\n"
 
 	quicktest_colored_print "Current instance:"
-	printf "\t${quicktest_DATA_PATH}/${instance_dir}/${instance}\n"
+	printf "${quicktest_DATA_PATH}/${instance_dir}/${instance}\n"
 
 	quicktest_colored_print "Current user config file:"
-	printf "\t${user_config_file_name}\n"
+	printf "${quicktest_USER_CONFIG_PATH}/${user_config_file_name}\n"
 
 	quicktest_colored_print "Current boilerplate:"
-	printf "\t${boilerplate_name}\n"
+	printf "${quicktest_BOILERPLATES_PATH}/${boilerplate_name}\n"
 }
 
 
