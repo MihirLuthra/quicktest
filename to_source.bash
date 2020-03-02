@@ -8,10 +8,10 @@ fi
 
 
 if [ -z "${QUICKTEST_PATH}" ] ; then
-	export readonly QUICKTEST_PATH="$( cd "$( dirname "${BASH_SOURCE}" )" ; pwd )"
+	export QUICKTEST_PATH="$( cd "$( dirname "${BASH_SOURCE}" )" ; pwd )"
 	export PATH="${QUICKTEST_PATH}/commands:${PATH}"
 fi
 
 if [ -z "${QUICKTEST_BASH}" ] ; then
-	export readonly QUICKTEST_BASH="bash"
+	export QUICKTEST_BASH="bash"
 fi
