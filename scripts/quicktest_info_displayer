@@ -107,6 +107,7 @@ ${quicktest_COLOR}-v|--verbose:${normal_color}
 
 verbose_output() {
 	local instance
+	local instance_dir
 	local boilerplate_name
 	local testfile_name
 	local user_config_file_name
@@ -114,20 +115,17 @@ verbose_output() {
 
 	instance="$( get_from_real_time_data "INSTANCE" )"
 
+	instance_dir="$( get_from_real_time_data "INSTANCE_DIR" )"
+
 	user_config_file_name="$( get_from_real_time_data "CURRENT_USER_CONFIG_FILE" )"
 
 	boilerplate_name="$( get_from_current_user_config_file "BOILERPLATE" )"
-
-	outfile="$( replace_quicktest_vars "___OUTPUT___" )"
 
 	quicktest_colored_print "Testing path:"
    	printf "\t${quicktest_TEST_PATH}\n"
 
 	quicktest_colored_print "Current instance:"
-	printf "\t${quicktest_TEST_PATH}/${instance}\n"
-
-	quicktest_colored_print "Current executable:"
-	printf "\t${outfile}\n"
+	printf "\t${quicktest_DATA_PATH}/${instance_dir}/${instance}\n"
 
 	quicktest_colored_print "Current user config file:"
 	printf "\t${user_config_file_name}\n"
@@ -140,13 +138,17 @@ verbose_output() {
 show_file_edit_history() {
 	local history_cnt=$1; shift
 
-	ls -1t "${quicktest_TEST_PATH}" | head -"${history_cnt}"
+	find "${quicktest_TEST_PATH}" -type f -name '*' \
+		| xargs stat -f '%c %N' \
+		| sort \
+		| awk '{print $2}' \
+		| head -"${history_cnt}"
 }
 
 show_all_boilerplates() {
-	ls -al "${quicktest_BOILERPLATES_PATH}"
+	ls "${quicktest_BOILERPLATES_PATH}"
 }
 
 show_all_user_config_files() {
-	ls -al "${quicktest_USER_CONFIG_PATH}"
+	ls "${quicktest_USER_CONFIG_PATH}"
 }
