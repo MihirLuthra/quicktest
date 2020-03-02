@@ -22,7 +22,7 @@ main() {
 
 	action_with_args="${action} ${quoted_args}"
 
-	printf "\n${action_with_args}\n\n"
+	printf "\n${action_with_args}\n\n" >> '/tmp/quicktest_action_history'
 
 	${BASH} -c "${action_with_args}"
 }
