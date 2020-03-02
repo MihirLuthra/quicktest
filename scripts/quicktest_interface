@@ -323,7 +323,8 @@ get_quicktest_var_value() {
 			value="$( basename "${quicktest_TEST_PATH}" )"
 			;;
 		'___INSTANCE_PATH___')
-			value="${quicktest_TEST_PATH}"
+			value="${quicktest_DATA_PATH}"
+			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE_DIR" )"
 			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
 			;;
 		'___INSTANCE_NAME_WITHOUT_EXTENSION___')
@@ -331,7 +332,8 @@ get_quicktest_var_value() {
 			value="${value%.*}"
 			;;
 		'___OUTPUT___')
-			value="${quicktest_TEST_PATH}"
+			value="${quicktest_DATA_PATH}"
+			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE_DIR" )"
 			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
 			value="${value}.out"
 			;;
