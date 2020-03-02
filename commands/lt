@@ -1,10 +1,11 @@
 #! /usr/bin/env bash
 
 BASE_DESIRED_VERSION="4"
+BASH_VER_USED="$( "${QUICKTEST_BASH}" -c 'echo "${BASH_VERSINFO}"' )"
 
-if [ "${BASH_VERSINFO:-0}" -lt "${BASE_DESIRED_VERSION}" ] ; then
+if [ "${BASH_VER_USED:-0}" -lt "${BASE_DESIRED_VERSION}" ] ; then
 	printf "bash version ${BASE_DESIRED_VERSION}+ required"
-	printf "Your bash version ${BASH_VERSION}"
+	printf "Your bash version ${BASH_VER_USED}"
 	return 1
 fi
 
@@ -12,4 +13,4 @@ SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
 
 export quicktest_PROG_NAME="$(basename "${BASH_SOURCE}")"
 
-${BASH} "${SCRIPTS_PATH}/quicktest_main" "$@"
+${QUICKTEST_BASH} "${SCRIPTS_PATH}/quicktest_main" "$@"

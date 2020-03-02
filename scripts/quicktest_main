@@ -104,7 +104,7 @@ open_file() {
 
 	return_if_error
 
-	"${BASH}" -c "${launch_text_editor}"
+	"${QUICKTEST_BASH}" -c "${launch_text_editor}"
 }
 
 #

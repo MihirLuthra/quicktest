@@ -10,4 +10,4 @@ fi
 
 SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
 
-${BASH} "${SCRIPTS_PATH}/quicktest_action" "___KEY_FOR_ACTION___" "$@"
+${QUICKTEST_BASH} "${SCRIPTS_PATH}/quicktest_action" "___KEY_FOR_ACTION___" "$@"

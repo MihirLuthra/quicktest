@@ -24,7 +24,7 @@ main() {
 
 	printf "\n${action_with_args}\n\n" >> '/tmp/quicktest_action_history'
 
-	${BASH} -c "${action_with_args}"
+	${QUICKTEST_BASH} -c "${action_with_args}"
 }
 
 main "$@"

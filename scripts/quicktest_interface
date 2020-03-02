@@ -376,7 +376,7 @@ replace_quicktest_vars() {
 	updated_input="$(
 		awk \
 		-v awk_share_path="${AWK_SHARE_PATH}" \
-		-v qt_shell="${BASH}" \
+		-v qt_shell="${QUICKTEST_BASH}" \
 		-v BASH_QUICKTEST_VARS="${QUICKTEST_VARS[*]}" \
 		-f "${AWK_FILES_PATH}/quicktest_var_replaces.awk" <<<"${input}"
 	)"
