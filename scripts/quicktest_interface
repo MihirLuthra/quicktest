@@ -90,9 +90,13 @@ readonly quicktest_DATA_PATH="${QUICKTEST_PATH}/data"
 readonly quicktest_TEST_PATH="${quicktest_DATA_PATH}/tests_dir"
 readonly quicktest_BOILERPLATES_PATH="${quicktest_DATA_PATH}/boilerplates"
 readonly quicktest_USER_CONFIG_PATH="${quicktest_DATA_PATH}/user_config_files"
+
 readonly quicktest_REAL_TIME_DATA="${quicktest_DATA_PATH}/data_files/real_time_data"
+readonly quicktest_DEFAULT_REAL_TIME_DATA="${quicktest_DATA_PATH}/data_files/default_real_time_data"
+
 readonly quicktest_USER_CONFIG_TEMPLATE="${quicktest_DATA_PATH}/templates/user_config_template"
 readonly quicktest_REGISTER_ACTION_TEMPLATE="${quicktest_DATA_PATH}/templates/register_action_template"
+
 readonly quicktest_DEFAULT_USER_CONFIG=".default"
 readonly quicktest_DEFAULT_INSTANCE=".default"
 readonly quicktest_DEFAULT_BOILERPLATE=".default"

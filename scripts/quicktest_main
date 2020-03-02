@@ -436,6 +436,17 @@ action_other() {
 	fi
 }
 
+new_install_actions() {
+
+	if [ ! -f "${quicktest_REAL_TIME_DATA}" ] ; then
+		cp "${quicktest_DEFAULT_REAL_TIME_DATA}" "${quicktest_REAL_TIME_DATA}"
+	fi
+
+	return_if_error
+
+	touch "${quicktest_DATA_PATH}/new_install_indicator"
+}
+
 #
 # Just parses options and according to
 # global variable ACTION that was set by
@@ -447,6 +458,8 @@ main() {
 	local user_config_file_path
 	local arg
 	local option
+
+	[ ! -f "${quicktest_DATA_PATH}/new_install_indicator" ] && new_install_actions
 
 	#
 	# We will use `return_if_error` which is an alias defined in
