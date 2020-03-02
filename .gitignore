@@ -1,2 +1,4 @@
 *.*.swp
 data/tests_dir/
+data/data_files/real_time_data
+data/new_install_indicator
