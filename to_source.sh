@@ -22,3 +22,20 @@ fi
 if [ -z "${QUICKTEST_BASH}" ] ; then
 	export QUICKTEST_BASH="bash"
 fi
+
+check_version() {
+	local base_desired_version="4"
+	local bash_ver_used="$( "${QUICKTEST_BASH}" -c 'echo "${BASH_VERSINFO}"' )"
+	local bash_version="$( "${QUICKTEST_BASH}" -c 'echo "${BASH_VERSION}"' )"
+
+	if [ "${bash_ver_used:-0}" -lt "${base_desired_version}" ] ; then
+		printf "%s\n" \
+			"bash version ${base_desired_version}+ required" \
+			"Your bash version is ${bash_version}" \
+			"Set QUICKTEST_BASH to bash's path (ver ${base_desired_version}+)" \
+			"before this script gets sourced."
+		return 1
+	fi
+}
+
+check_version || return 1
