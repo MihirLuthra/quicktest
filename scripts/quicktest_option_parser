@@ -1,8 +1,8 @@
 #! /usr/bin/env bash
 
 
-export SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
-export AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
+SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
+AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
 
 source "${SCRIPTS_PATH}/quicktest_interface"
 

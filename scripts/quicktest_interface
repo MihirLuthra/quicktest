@@ -5,9 +5,9 @@
 readonly quicktest_SOURCE_GUARD="1"
 
 
-export SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
-export AWK_SHARE_PATH="${QUICKTEST_PATH}/scripts/awk_share"
-export AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
+SCRIPTS_PATH="${QUICKTEST_PATH}/scripts"
+AWK_SHARE_PATH="${QUICKTEST_PATH}/scripts/awk_share"
+AWK_FILES_PATH="${SCRIPTS_PATH}/awk"
 
 
 #
