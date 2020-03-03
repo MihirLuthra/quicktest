@@ -2,7 +2,7 @@ HOW_TO_OPEN_EDITOR   vim ___FILE_TO_OPEN___
 
 BOILERPLATE   general.c
 
-COMPILE   gcc ___INSTANCE_PATH___ -o ___OUTPUT___
+COMPILE   gcc -I___QUICKTEST_DATAPATH___/c_include/ ___INSTANCE_PATH___ -o ___OUTPUT___
 
 EXECUTE   ___OUTPUT___
 
