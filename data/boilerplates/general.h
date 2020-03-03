@@ -1,0 +1,6 @@
+#ifndef _____INSTANCE_NAME_WITHOUT_EXTENSION____h__
+#define _____INSTANCE_NAME_WITHOUT_EXTENSION____h__
+
+
+
+#endif /* _____INSTANCE_NAME_WITHOUT_EXTENSION____h__ */
