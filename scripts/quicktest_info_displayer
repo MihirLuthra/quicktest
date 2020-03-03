@@ -137,12 +137,32 @@ verbose_output() {
 
 show_file_edit_history() {
 	local history_cnt=$1; shift
+	local stat_with_timestamp
 
-	find "${quicktest_TEST_PATH}" -type f -name '*' \
-		| xargs stat -f '%c %N' \
-		| sort \
-		| awk '{print $2}' \
-		| head -"${history_cnt}"
+	#
+	# Makes me sick but just a quick workaround
+	# to handle differences between GNU and BSD stat
+	#
+
+	if strings '/usr/bin/stat' | grep -q 'GNU coreutils' 2> /dev/null ; then
+
+		find "${quicktest_TEST_PATH}" -type f -name '*' \
+			| xargs stat -c '%Y %N' \
+			| sort -r \
+			| awk '{print $2}' \
+			| head -"${history_cnt}"
+
+	else
+		# well just be lazy and assume bsd stat
+
+		find "${quicktest_TEST_PATH}" -type f -name '*' \
+			| xargs stat -f '%c %N' \
+			| sort \
+			| awk '{print $2}' \
+			| head -"${history_cnt}"
+
+	fi
+
 }
 
 show_all_boilerplates() {
