@@ -96,6 +96,8 @@ open_file() {
 	local file_to_open=$1 ; shift
 	local launch_text_editor
 
+	touch "${file_to_open}"
+
 	update_real_time_data "FILE_TO_OPEN" "${file_to_open}"
 
 	return_if_error
