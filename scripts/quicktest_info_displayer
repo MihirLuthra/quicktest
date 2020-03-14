@@ -157,7 +157,7 @@ show_file_edit_history() {
 
 		find "${quicktest_TEST_PATH}" -type f -name '*' \
 			| xargs stat -f '%c %N' \
-			| sort \
+			| sort -r \
 			| awk '{print $2}' \
 			| head -"${history_cnt}"
 
