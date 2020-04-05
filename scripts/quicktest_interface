@@ -88,6 +88,7 @@ quicktest_path_normalize() {
 #
 readonly quicktest_DATA_PATH="${QUICKTEST_PATH}/data"
 readonly quicktest_TEST_PATH="${quicktest_DATA_PATH}/tests_dir"
+readonly quicktest_OUTPUT_PATH="${quicktest_DATA_PATH}/out_dir"
 readonly quicktest_BOILERPLATES_PATH="${quicktest_DATA_PATH}/boilerplates"
 readonly quicktest_USER_CONFIG_PATH="${quicktest_DATA_PATH}/user_config_files"
 
@@ -289,8 +290,11 @@ get_from_current_user_config_file() {
 #  ___INSTANCE_NAME_WITHOUT_EXTENSION___
 #      -> Testfile name with extension stripped
 #
+#  ___OUTPUT_DIR___
+#      -> Directory to store output files
+#
 #  ___OUTPUT___
-#      -> Just for convenience; is equivalent to ___INSTANCE_PATH___/___INSTANCE___".out"
+#      -> Just for convenience; is equivalent to ${quicktest_OUTPUT_PATH}/___INSTANCE___".out"
 #
 #  ___FILE_TO_OPEN___
 #      -> Represents that file that is getting opened with text editor.
@@ -331,9 +335,11 @@ get_quicktest_var_value() {
 			value="$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
 			value="${value%.*}"
 			;;
+		'___OUTPUT_DIR___')
+			value="${quicktest_OUTPUT_DIR}"
+			;;
 		'___OUTPUT___')
-			value="${quicktest_DATA_PATH}"
-			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE_DIR" )"
+			value="${quicktest_OUTPUT_PATH}"
 			value="${value}/$( get_value_for_key "${quicktest_REAL_TIME_DATA}" "INSTANCE" )"
 			value="${value}.out"
 			;;
@@ -370,6 +376,7 @@ replace_quicktest_vars() {
 		'___INSTANCE_PATH___'
 		'___INSTANCE_NAME_WITHOUT_EXTENSION___'
 		'___OUTPUT___'
+		'___OUTPUT_DIR___'
 		'___FILE_TO_OPEN___'
 	)
 

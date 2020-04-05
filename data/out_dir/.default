@@ -1,0 +1,16 @@
+This is the default instance.
+In order to create a new instance, do as follows:
+
+First create a user config file as per your preferences:
+
+	lt -mucf <user_config_file_name>
+
+Then create a new instance,
+
+	lt -i <instance_name> -uc <user_config_file_name> -n
+
+Where,
+  -i  : Tells the filename
+  -uc : Tells the user config file you want to use.
+        User confg file are just settings to deal with the file.
+  -n  : Tells to copy boilerplate code to the instance.
