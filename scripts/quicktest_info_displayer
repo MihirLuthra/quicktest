@@ -139,6 +139,13 @@ show_file_edit_history() {
 	local history_cnt=$1; shift
 	local stat_with_timestamp
 
+	case ${history_cnt} in
+		0|*[!0-9]*)
+			printf_err "${history_cnt}: invalid history count"
+			return 1
+			;;
+	esac
+
 	#
 	# Makes me sick but just a quick workaround
 	# to handle differences between GNU and BSD stat
