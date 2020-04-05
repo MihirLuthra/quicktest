@@ -317,13 +317,14 @@ action_open_instance() {
 	local instance_dir
 	local instance_path
 	local retval
+	local relative_instance_cnt
 
 	#
 	# If instance arg was given, use that instance and set it in real time data
 	# else get the instance to use from real time data's key
 	# INSTANCE i.e. the instance last used.
 	#
-
+	
 	if option='--instance-directory' && [ -n "${OPTIONS["${option}"]}" ] ; then
 		instance_dir="$( get_arg "${option}" "1" )"
 		update_real_time_data "INSTANCE_DIR" "${instance_dir}"
@@ -339,6 +340,30 @@ action_open_instance() {
 		instance="$( get_arg "${option}" "1" )"
 		update_real_time_data "INSTANCE" "${instance}"
 		return_if_error
+	elif option="--instance-relative" && [ -n "${OPTIONS["${option}"]}" ] ; then
+
+		relative_instance_cnt="$( get_arg "${option}" "1" )"
+		case ${relative_instance_cnt} in
+			0|*[!0-9]*)
+				printf_err "${relative_instance_cnt} isn't a valid relative instance count"
+				return 1
+				;;
+		esac
+
+		instance="$( show_file_edit_history "${relative_instance_cnt}" | sed -n "${relative_instance_cnt}p" )"
+		instance="${instance##*/}"
+		
+		if [ -z "${instance}" ] ; then
+			printf_err_func "You don't have any file at -${relative_instance_cnt}" \
+							"\nTotal file count in ${instance_dir} = $( \
+								show_file_edit_history "${relative_instance_cnt}" |  grep -c "^.*$" \
+							)"
+			return 1
+		fi
+
+		update_real_time_data "INSTANCE" "${instance}"
+		return_if_error
+
 	else
 		instance="$( get_from_real_time_data "INSTANCE" )"
 		return_if_error

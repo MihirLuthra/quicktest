@@ -111,6 +111,11 @@ parse_options() {
 				OPTIONS["${option}"]=1
 				arg_schema=1
 				;;
+			-ir|--instance-relative)
+				option='--instance-relative'
+				OPTIONS["${option}"]=1
+				arg_schema=1
+				;;
 			-id|--instance-directory)
 				option='--instance-directory'
 				OPTIONS["${option}"]=1
