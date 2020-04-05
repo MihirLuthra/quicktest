@@ -15,6 +15,7 @@ usage() {
  		"  [-h|--help]" \
 		"  [-i|--instance instance_name]" \
 		"  [-id|--instance-directory instance_dir]" \
+		"  [-ir|--instance-relative relative_count]" \
 		"  [-mb|--modify-boilerplate [boilerplate_file]]" \
 		"  [-mucf|--modify-user-config-file] [user_config_file]]" \
 		"  [-n|--new]" \
@@ -46,6 +47,11 @@ ${quicktest_COLOR}-h|--help:${normal_color}
 
 ${quicktest_COLOR}-i|--instance <instance_name>:${normal_color}
 	The name of the test instance.
+
+${quicktest_COLOR}-ir|--instance-relative <n>:${normal_color}
+	Indicates the instance which is was accessed/created in tests_dir
+	n^th time before.
+	Or you can simply define it as n^th line of output of \`lt -sh n\` 
 
 ${quicktest_COLOR}-id|--instance-directory <instance_dir_name>:${normal_color}
 	The name of the directory where current instance should be created.
